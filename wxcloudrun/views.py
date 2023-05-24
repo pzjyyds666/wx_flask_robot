@@ -4,10 +4,13 @@ from run import app
 from wxcloudrun.dao import delete_counterbyid, query_counterbyid, insert_counter, update_counterbyid
 from wxcloudrun.model import Counters
 from wxcloudrun.response import make_succ_empty_response, make_succ_response, make_err_response
+from flask import request, make_response
+from hashlib import sha1
 
 
 @app.route('/')
 def index():
+    print(app.url_map)
     """
     :return: 返回index页面
     """
@@ -36,7 +39,7 @@ def count():
         if counter is None:
             counter = Counters()
             counter.id = 1
-            counter.count = 1
+            counter.count = 36
             counter.created_at = datetime.now()
             counter.updated_at = datetime.now()
             insert_counter(counter)
@@ -64,3 +67,21 @@ def get_count():
     """
     counter = Counters.query.filter(Counters.id == 1).first()
     return make_succ_response(0) if counter is None else make_succ_response(counter.count)
+
+
+@app.route('/text_reply2')
+def text_replay():
+    if request.method == 'GET':
+        token = r'test' # 这个根据自己的设置自行修改
+        signature = request.args.get('signature', '')
+        echostr = request.args.get('echostr', '')
+        timestamp = request.args.get('timestamp', '')
+        nonce = request.args.get('nonce', '')
+        tmp = [timestamp, nonce, token]
+        tmp.sort()
+        tmp = ''.join(tmp)
+        if signature == sha1(tmp).hexdigest():
+            return  make_response(echostr)
+        else:
+            return "Access denied.diy"
+    pass
