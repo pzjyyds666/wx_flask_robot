@@ -98,3 +98,42 @@ def text_replay():
         else:
             return "Access denied.diy---post"
     pass
+
+import xml.etree.ElementTree as et
+import muban
+import hashlib
+
+@app.route('/wx_flask',methods=['GET','POST'])
+def wechat():
+
+    if request.method == 'GET':
+        token = 'xiaoqingxin'
+        data = request.args
+        signature = data.get('signature','')
+        timestamp = data.get('timestamp','')
+        nonce = data.get('nonce','')
+        echostr = data.get('echostr','')
+
+        list = [token, timestamp, nonce]
+        list.sort()
+
+        s = list[0] + list[1] + list[2]
+
+        hascode = hashlib.sha1(s.encode('utf-8')).hexdigest()
+
+        if hascode == signature:
+            return echostr
+        else:
+            return ""
+
+    if request.method == 'POST':
+        xmldata = request.args
+        xml_rec = et.fromstring(xmldata)
+
+        ToUserName = xml_rec.find('ToUserName').text
+        fromUser = xml_rec.find('FromUserName').text
+        MsgType = xml_rec.find('MsgType').text
+        Content = xml_rec.find('Content').text
+        MsgId = xml_rec.find('MsgId').text
+
+        return muban.reply_muban(MsgType) % (fromUser, ToUserName, int(time()), Content)
