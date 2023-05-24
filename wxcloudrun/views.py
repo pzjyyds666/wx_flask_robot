@@ -84,4 +84,17 @@ def text_replay():
             return  make_response(echostr)
         else:
             return "Access denied.diy"
+    else:
+        token = r'test' # 这个根据自己的设置自行修改
+        signature = request.args.get('signature', '')
+        echostr = request.args.get('echostr', '')
+        timestamp = request.args.get('timestamp', '')
+        nonce = request.args.get('nonce', '')
+        tmp = [timestamp, nonce, token]
+        tmp.sort()
+        tmp = ''.join(tmp)
+        if signature == sha1(tmp).hexdigest():
+            return  make_response(echostr)
+        else:
+            return "Access denied.diy---post"
     pass
